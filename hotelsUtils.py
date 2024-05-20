@@ -93,7 +93,7 @@ class SerpapiUtils:
                 "currency": "USD",
                 "outbound_date": times['from_date'],
                 "return_date": times['to_date'],
-                "api_key": "da21d6c611a6aec190404e761b309cabfb1eb1cd8bca3f6b543c4f26ea75e7bc"  # "MY_KEY_HERE"
+                "api_key": "MY_KEY_HERE"
             }
 
             if flight_token:
