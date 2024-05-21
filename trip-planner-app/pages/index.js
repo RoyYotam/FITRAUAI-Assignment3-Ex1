@@ -6,6 +6,7 @@ export default function Home() {
     const [fromDate, setFromDate] = useState('');
     const [toDate, setToDate] = useState('');
     const [isFormValid, setIsFormValid] = useState(false);
+    const [resultData, setResultData] = useState(null);
 
     const today = new Date().toISOString().split('T')[0];
 
@@ -17,10 +18,10 @@ export default function Home() {
         e.preventDefault();
 
         const formData = {
-            tripType,
-            budget,
-            fromDate,
-            toDate
+            trip_type: tripType,
+            budget: budget,
+            from_date: fromDate,
+            to_date: toDate
         };
 
         try {
@@ -33,13 +34,12 @@ export default function Home() {
             });
 
             if (!response.ok) {
-                throw new Error('Failed to fetch data');
+                console.error(`HTTP error! Status: ${response.status}`);
             }
 
             const data = await response.json();
+            setResultData(data);
 
-            // Navigate to result page with data
-            // Example: Router.push('/result', { data });
         } catch (error) {
             console.error('Error:', error);
         }
@@ -65,9 +65,9 @@ export default function Home() {
                             Choose Your Trip Type:
                             <select value={tripType} onChange={(e) => {setTripType(e.target.value); handleFieldChange();}} id="tripType">
                                 <option value="">Select Trip Type</option>
-                                <option value="beach">Beach</option>
-                                <option value="ski">Ski</option>
-                                <option value="city">City</option>
+                                <option value="Beach">Beach</option>
+                                <option value="Ski">Ski</option>
+                                <option value="City">City</option>
                             </select>
                         </label>
                     </div>
@@ -92,6 +92,47 @@ export default function Home() {
                     <button type="submit" className="button" disabled={!isFormValid}>Let's Go!</button>
                 </form>
             </div>
+
+            {resultData && (
+                <div className="resultContainer">
+                    {resultData.map((result, index) => (
+                        <div key={index}>
+                            <h2>Option {index + 1}</h2>
+                            {/* Display flights */}
+                            <h3>Flights:</h3>
+                            {result.from_flight && (
+                                <div className="flight">
+                                    {/* Display from_flight details */}
+                                    <p>From Flight:</p>
+                                    <p>Airline: {result.from_flight.airline}</p>
+                                    <p>Flight Number: {result.from_flight.flight_number}</p>
+                                    {/* Add more flight details as needed */}
+                                </div>
+                            )}
+                            {result.to_flight && (
+                                <div className="flight">
+                                    {/* Display to_flight details */}
+                                    <p>To Flight:</p>
+                                    <p>Airline: {result.to_flight.airline}</p>
+                                    <p>Flight Number: {result.to_flight.flight_number}</p>
+                                    {/* Add more flight details as needed */}
+                                </div>
+                            )}
+                            {/* Display hotel */}
+                            <h3>Hotel:</h3>
+                            {result.hotel && (
+                                <div className="hotel">
+                                    {/* Display hotel details */}
+                                    <p>Name: {result.hotel.name}</p>
+                                    <p>Description: {result.hotel.description}</p>
+                                    {/* Add more hotel details as needed */}
+                                </div>
+                            )}
+                        </div>
+                    ))}
+                </div>
+            )}
+
         </div>
     );
 
