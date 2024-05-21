@@ -1,7 +1,7 @@
 import json
 from datetime import datetime
 
-from hotelsUtils import SerpapiUtils
+from serpapiUtils import SerpapiUtils
 from openAiUtils import GptUtils, GptType
 
 from fastapi import FastAPI, Request
