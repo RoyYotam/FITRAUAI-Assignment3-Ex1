@@ -2,6 +2,7 @@ from datetime import datetime
 from enum import Enum
 import serpapi
 # just for test!!! todo delete this
+# todo change name
 import json
 
 
@@ -36,27 +37,30 @@ class SerpapiUtils:
             if 'Airport_code' not in location or 'Place' not in location:
                 continue
 
-            from_flight = self.search(SerpapiType.FLIGHTS, budget, location['Airport_code'])
-
-            if from_flight == {}:
-                continue
-
-            from_flight_token = self.get_token_from_flight(from_flight)
-
-            if from_flight_token == "":
-                continue
-
-            to_flight = self.search(SerpapiType.HOTELS, budget, location['Airport_code'], from_flight_token)
+            # to_flight = self.search(SerpapiType.FLIGHTS, budget, location['Airport_code'])
+            to_flight = self.to_from_file()
 
             if to_flight == {}:
                 continue
 
-            flights_price = self.get_price_from_flight(from_flight)
+            to_flight_token = self.get_token_from_flight(to_flight)
+
+            if to_flight_token == "":
+                continue
+
+            # from_flight = self.search(SerpapiType.HOTELS, budget, location['Airport_code'], to_flight_token)
+            from_flight = self.from_from_file()
+
+            if from_flight == {}:
+                continue
+
+            flights_price = self.get_price_from_flight(to_flight)
 
             if flights_price == -1:
                 continue
 
-            hotel = self.search(SerpapiType.HOTELS, (budget - flights_price), location['Place'])
+            # hotel = self.search(SerpapiType.HOTELS, (budget - flights_price), location['Place'])
+            hotel = self.hotel_from_file()
 
             if hotel == {}:
                 continue
@@ -131,27 +135,27 @@ class SerpapiUtils:
         except Exception as _:
             return {}
 
-    # @staticmethod
-    # def load_from_file():
-    #     # Reading the dictionary from the file
-    #     with open('hotels_data.txt', 'r') as file:
-    #         loaded_results = json.load(file)
-    #         print(SerpapiUtils.get_max_affordable_price_hotel(loaded_results, 800))
-    #
-    # @staticmethod
-    # def load_from_file2():
-    #     # Reading the dictionary from the file
-    #     with open('from_flight_data_3.txt', 'r') as file:
-    #         loaded_results = json.load(file)
-    #         print(SerpapiUtils.get_lowest_price_flight(loaded_results, 800))
-    #
-    # @staticmethod
-    # def load_from_file3():
-    #     # Reading the dictionary from the file
-    #     with open('from_flight_data_3.txt', 'r') as file:
-    #         loaded_results = json.load(file)
-    #         res = SerpapiUtils.get_lowest_price_flight(loaded_results, 800)
-    #         print(res)
+    # TODO delete this part
+    @staticmethod
+    def hotel_from_file():
+        # Reading the dictionary from the file
+        with open('hotels_data.txt', 'r') as file:
+            loaded_results = json.load(file)
+            return SerpapiUtils.get_max_affordable_price_hotel(loaded_results, 800)
+
+    @staticmethod
+    def to_from_file():
+        # Reading the dictionary from the file
+        with open('from_flight_data_3.txt', 'r') as file:
+            loaded_results = json.load(file)
+            return SerpapiUtils.get_lowest_price_flight(loaded_results, 800)
+
+    @staticmethod
+    def from_from_file():
+        # Reading the dictionary from the file
+        with open('to_flight_data_3.txt', 'r') as file:
+            loaded_results = json.load(file)
+            return SerpapiUtils.get_lowest_price_flight(loaded_results, 800)
 
     @staticmethod
     def get_max_affordable_price_hotel(hotels_data: {}, budget: int) -> {}:
