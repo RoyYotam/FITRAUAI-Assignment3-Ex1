@@ -1,9 +1,6 @@
 from datetime import datetime
 from enum import Enum
 import serpapi
-# just for test!!! todo delete this
-# todo change name
-import json
 
 
 class SerpapiType(Enum):
@@ -34,11 +31,10 @@ class SerpapiUtils:
         results = []
 
         for location in where_to:
-            if 'Airport_code' not in location or 'Place' not in location:
+            if 'AirportCode' not in location or 'Place' not in location:
                 continue
 
-            # to_flight = self.search(SerpapiType.FLIGHTS, budget, location['Airport_code'])
-            to_flight = self.to_from_file()
+            to_flight = self.search(SerpapiType.FLIGHTS, budget, location['AirportCode'])
 
             if to_flight == {}:
                 continue
@@ -48,8 +44,7 @@ class SerpapiUtils:
             if to_flight_token == "":
                 continue
 
-            # from_flight = self.search(SerpapiType.HOTELS, budget, location['Airport_code'], to_flight_token)
-            from_flight = self.from_from_file()
+            from_flight = self.search(SerpapiType.FLIGHTS, budget, location['AirportCode'], to_flight_token)
 
             if from_flight == {}:
                 continue
@@ -59,16 +54,24 @@ class SerpapiUtils:
             if flights_price == -1:
                 continue
 
-            # hotel = self.search(SerpapiType.HOTELS, (budget - flights_price), location['Place'])
-            hotel = self.hotel_from_file()
+            hotel = self.search(SerpapiType.HOTELS, (budget - flights_price), location['Place'])
 
             if hotel == {}:
                 continue
 
+            hotel_price = self.get_price_from_hotel(hotel)
+
+            if hotel_price == -1:
+                continue
+
+            total_price = hotel_price + flights_price
+
             result = {
+                'city': location['Place'],
                 'hotel': hotel,
                 'from_flight': from_flight,
-                'to_flight': to_flight
+                'to_flight': to_flight,
+                'total_price': total_price
             }
 
             results.append(result)
@@ -135,28 +138,6 @@ class SerpapiUtils:
         except Exception as _:
             return {}
 
-    # TODO delete this part
-    @staticmethod
-    def hotel_from_file():
-        # Reading the dictionary from the file
-        with open('hotels_data.txt', 'r') as file:
-            loaded_results = json.load(file)
-            return SerpapiUtils.get_max_affordable_price_hotel(loaded_results, 800)
-
-    @staticmethod
-    def to_from_file():
-        # Reading the dictionary from the file
-        with open('from_flight_data_3.txt', 'r') as file:
-            loaded_results = json.load(file)
-            return SerpapiUtils.get_lowest_price_flight(loaded_results, 800)
-
-    @staticmethod
-    def from_from_file():
-        # Reading the dictionary from the file
-        with open('to_flight_data_3.txt', 'r') as file:
-            loaded_results = json.load(file)
-            return SerpapiUtils.get_lowest_price_flight(loaded_results, 800)
-
     @staticmethod
     def get_max_affordable_price_hotel(hotels_data: {}, budget: int) -> {}:
         max_affordable_price_hotel = {}
@@ -220,14 +201,20 @@ class SerpapiUtils:
             pass
         return price
 
+    @staticmethod
+    def get_price_from_hotel(hotel_data: {}) -> int:
+        price = -1
+        try:
+            price = int(hotel_data['total_rate']['extracted_lowest'])
+        except Exception as _:
+            pass
+        return price
+
 
 if __name__ == "__main__":
     serpapi_utils = SerpapiUtils(datetime(2024, 6, 20), datetime(2024, 6, 25))
     # serpapi_utils.search(SerpapiType.HOTELS, 800, where_to="Phuket, Thailand")
-    # serpapi_utils.load_from_file()
     # serpapi_utils.search(SerpapiType.FLIGHTS, 800, where_to="HKT")
-    # serpapi_utils.load_from_file2()
     # token = "WyJDalJJUlhCS1lreGtlRXRhUkZWQlRHWmFhVUZDUnkwdExTMHRMUzB0TFhCbVozTXhNMEZCUVVGQlIxcE1iV2RWVFdSS09HTkJFZ3RCU1RFME1IeEJTVE0zTmhvTENMSDNBeEFDR2dOVlUwUTRISEN4OXdNPSIsW1siVExWIiwiMjAyNC0wNi0yMCIsIkRFTCIsbnVsbCwiQUkiLCIxNDAiXSxbIkRFTCIsIjIwMjQtMDYtMjEiLCJIS1QiLG51bGwsIkFJIiwiMzc2Il1dXQ=="
     # serpapi_utils.search(SerpapiType.FLIGHTS, 800, where_to="HKT", flight_token=token)
-    # serpapi_utils.load_from_file3()
 

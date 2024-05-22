@@ -1,11 +1,18 @@
 /* styles.css */
 
+html,
+body {
+    margin: 0;
+    padding: 0;
+    height: 100%;
+    background-color: #f8f3ea; /* Lighter background color */
+}
+
 .container {
     display: flex;
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background-color: #f8f3ea; /* Lighter background color */
 }
 
 .formContainer {
@@ -72,4 +79,67 @@
 .button:disabled {
     background-color: #ccc;
     cursor: not-allowed;
+}
+
+
+/* Result section */
+/* -------------- */
+
+
+.resultContainer {
+    width: 60vw;
+    height: 80vh;
+    padding: 5vh;
+    border-radius: 5vw;
+    box-shadow: 0 0 2vw 0.2vw rgba(0,0,0,0.1);
+    background-color: #f1e7db;
+    overflow: auto;
+
+}
+
+.closeButton {
+    background-color: transparent;
+    border: none;
+    font-size: calc(2vh + 1vw); /* Responsive font size using a ratio */
+    cursor: pointer;
+    position: absolute;
+    top: 1vh;
+    left: 1vw;
+}
+
+.buttonContainer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 2vh;
+}
+
+.transparentButton {
+    background-color: transparent;
+    border: none;
+    font-size: calc(1vh + 1vw); /* Responsive font size using a ratio */
+    cursor: pointer;
+}
+
+.chooseButton {
+    background-color: transparent;
+    color: #007bff;
+    border: none;
+    font-size: calc(2vh + 1vw); /* Responsive font size using a ratio */
+    cursor: pointer;
+    padding: 1vh 2vw;
+    border-radius: 5px;
+}
+
+.resultItem {
+    margin-bottom: 2vh;
+    font-size: calc(1vh + 1vw); /* Responsive font size using a ratio */
+}
+
+.flight, .hotel, .layover {
+    margin-bottom: 1vh;
+    font-size: calc(1vh + 1vw); /* Responsive font size using a ratio */
+}
+
+.dayTripImage {
+    max-width: 100%;
 }

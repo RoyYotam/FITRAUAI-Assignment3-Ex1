@@ -19,15 +19,15 @@ class GptUtils:
             {"role": "system", "content":
                 """
                 You are trip planner master! No one can plan better trip than you are. 
-                When a user tell you the when(dd/mm-dd/mm) and where(city), you will plan a daily trip for for every day of his vacation.
-                In addition, you will provide a prompt to write to dall-e to create a picture of the trip.
+                When a user tell you the when(dd/mm-dd/mm) and where(city), you will plan a daily trip for every date between those dates.
+                In addition, you will provide exactly 4 different prompts to write to dall-e, they will create a picture of some trip activities.
                 The result should be in a Json only -  
-                { "Day_trip_info":  
+                { "DayTripInfo": [ 
                 { 
                 "Date" : "dd/mm",   
-                "Activities":  [{"TIME_ON_DAY":  hour:minutes,  "Activity": ""}, ...]   
-                }
-                , "Prompt": ""
+                "Activities":  [{"TimeOnDay":  hour:minutes,  "Activity": ""}, ...]   
+                } ]
+                , "Prompt": [""]
                 }
                 """}
         self.get_cities_by_time_and_trip_type_message = \
@@ -37,7 +37,7 @@ class GptUtils:
                 You receive time of trip (dd/mm-dd/mm), and trip type, and return 5 possible places in the world to travel.
                 The result should be in json:
                 {
-                "Locations": [{"Place": "", "Airport_code: ""}, ...]              
+                "Locations": [{"Place": "", "AirportCode: ""}, ...]              
                 }"
                 """}
 
@@ -59,20 +59,13 @@ class GptUtils:
         except Exception as _:
             return None
 
-    def ask_gpt_for_image(self, dalle_input: str) -> []:
-        try:
-            response = self.client.images.generate(
-                model="dall-e-2",
-                prompt=dalle_input,
-                size="1024x1024",
-                response_format="b64_json",
-                n=4,
-            )
+    def ask_gpt_for_images(self, dalle_inputs: [str]) -> []:
+        files_names = self.generate_unique_img_name(num_of_files=4)
+        available_images = []
 
-            images = response.data
-            files_names = self.generate_unique_img_name(num_of_files=4)
-
-            for file_name, img_data in zip(files_names, images):
+        for dalle_input, file_name in zip(dalle_inputs, files_names):
+            try:
+                img_data = self.dalle_single_image_creator(dalle_input)
                 image_data_base64 = img_data.b64_json
                 image_data = base64.b64decode(image_data_base64)
 
@@ -80,10 +73,23 @@ class GptUtils:
                 with open(file_name, "wb") as fh:
                     fh.write(image_data)
 
-            return files_names
+                    available_images.append(file_name)
 
-        except Exception as _:
-            return None
+            except Exception as _:
+                continue
+
+        return available_images
+
+    def dalle_single_image_creator(self, dalle_input: str):
+        response = self.client.images.generate(
+            model="dall-e-2",
+            prompt=dalle_input,
+            size="1024x1024",
+            response_format="b64_json",
+            n=1,
+        )
+
+        return response.data[0]
 
     @staticmethod
     def generate_unique_img_name(num_of_files=1) -> []:
@@ -114,8 +120,8 @@ if __name__ == "__main__":
     gptUtils = GptUtils()
     # res = gptUtils.ask_gpt_for_help(GptType.CITY_ADVISOR, "22/3-25/3, Beach")
     # res = gptUtils.ask_gpt_for_help(GptType.DAILY_TRIP_PLANNER, "22/3-25/3, Phuket, Thailand")
-    test_message = """
-                        Create a picture of the beautiful beaches and vibrant culture of Phuket, Thailand. Show the Big Buddha, Patong Beach, Phi Phi Islands, Similan Islands, and the stunning sunset at Promthep Cape.
-                        """
-    print(gptUtils.ask_gpt_for_image(test_message))
+    # test_message = """
+    #                     Generate an image of colorful buildings and street art in Old Phuket Town
+    #                     """
+    # print(gptUtils.ask_gpt_for_images([test_message]))
 
